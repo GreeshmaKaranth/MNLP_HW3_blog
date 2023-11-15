@@ -1,10 +1,10 @@
 ---
-title: ERNIE-M: Enhanced Multilingual Representation by Aligning Cross-lingual Semantics with Monolingual Corpora
+title: Understanding ERNIE-M - Enhanced Multilingual Representation by Aligning Cross-lingual Semantics with Monolingual Corpora
 author: Anirudh Kannan, Greeshma Karanth
 date: 2023-11-14
 tag:
   - Multilingual NLP
-  - MNLP Homework 3
+  - 11-737 MNLP Homework 3
   - Cross-Lingual Semantics
 category:
   - MNLP
@@ -16,35 +16,20 @@ Reading Time: About 10 minutes.
 
 <!-- more -->
 
-Paper：<https://arxiv.org/abs/2012.13577>
+Paper：<https://aclanthology.org/2021.emnlp-main.3/>
 
-Code: <https://github.com/jiangjiechen/LOREN>
+Code: <https://github.com/PaddlePaddle/ERNIE/tree/repro/ernie-m>
 
-Demo: <https://huggingface.co/spaces/Jiangjie/loren-fact-checking>
+Demo: <https://huggingface.co/docs/transformers/v4.35.1/en/model_doc/ernie_m#overview>
 
 ## Introduction
 
-![image1](./jametlene-reskp-Q79XFGuTFfM-unsplash.jpg)
+![ernie](./ernie.jpg)
 
-Contemporarily, the widespread use of the internet leads people to be more relying on it as an information
-source for news or life tips. However, though the information we get can be reliable the majority of the time,  
-it's still inevitable to have some rumors spreading across the internet. For instance, on Feb.7, an article
-published by _the Washington Free Beacon_ claimed that "Biden Admin To Fund Crack Pipe Distribution To Advance
-‘Racial Equity " [1] while the truth is quite opposite --- Biden didn't fund for crack pipes. How to have models
-to detect the truthfulness of these claims? Some studies have developed models on fact verification, but
-these models only give you the result of prediction and ignore the importance of providing reasons for that result.
-Nonetheless, we should not disregard the essentials of providing rationales for the fact verification result in order
-to convince audiences. Aim to solve this issue, the recent paper _LOREN: Logic-Regularized Reasoning
-for Interpretable Fact Verification_ [2] introduced the LOREN method that can predict the veracity of a
-claim while generating rationales for the result.
+Recent studies have demonstrated that pre-trained cross-lingual models achieve impressive performance in downstream cross-lingual tasks. This improvement benefits from learning a large amount of monolingual and parallel corpora. Although it is generally acknowledged that parallel corpora are critical
+for improving the model performance, existing methods are often constrained by the size of parallel corpora, especially for low resource languages. [1] 
+Ernie-M is a new training method  that encourages the model to align the representation of multiple languages with monolingual corpora, to overcome the constraint that the parallel corpus size places on the model performance.
 
-In this article, I will introduce the model, LOREN, in three aspects:
-
-1. Explain the LOREN'S architecture.
-
-2. Analyze the performance of LOREN.
-
-3. Possible improvements and potentials of LOREN.
 
 ## LOREN'S architecture
 
@@ -160,7 +145,6 @@ To verify the veracity of a claim, LOREN first computes the probability of the v
 
 ## References
 
-[1] Patrick Hauf "Biden Admin To Fund Crack Pipe Distribution To Advance ‘Racial Equity’" _the Washington Free Beacon_, 2022.
+[1] Xuan Ouyang, Shuohuan Wang, Chao Pang, Yu Sun, Hao Tian, Hua Wu, and Haifeng Wang. 2021. ERNIE-M: Enhanced Multilingual Representation by Aligning Cross-lingual Semantics with Monolingual Corpora. In Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing, pages 27–38, Online and Punta Cana, Dominican Republic. Association for Computational Linguistics.
 
-[2] Jiangjie Chen, Qiaoben Bao, Changzhi Sun, Xinbo Zhang, Jiaze Chen, Hao Zhou, Yanghua Xiao, and Lei Li.
-"LOREN: Logic-Regularized Reasoning for Interpretable Fact Verification", AAAI, 2022
+[2] TODO
