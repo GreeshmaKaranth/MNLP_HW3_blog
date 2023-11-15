@@ -1,13 +1,13 @@
 ---
-title: Automatic Verification of Natural Language Claims
-author: Ziyue Wang
-date: 2022-04-08
+title: ERNIE-M: Enhanced Multilingual Representation by Aligning Cross-lingual Semantics with Monolingual Corpora
+author: Anirudh Kannan, Greeshma Karanth
+date: 2023-11-14
 tag:
-  - Fact Verafication
-  - Reasoning
-  - Logic-regularized neural network
+  - Multilingual NLP
+  - MNLP Homework 3
+  - Cross-Lingual Semantics
 category:
-  - NLP
+  - MNLP
 ---
 
 How to develop a model to verify a natural language statement while explaining its rationale?
