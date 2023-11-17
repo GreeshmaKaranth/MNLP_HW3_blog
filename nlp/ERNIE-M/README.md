@@ -86,6 +86,69 @@ In ERNIE-M, the authors use MMLM and TLM by default because of the strong perfor
 
 
 ## Experiments and Results
+The authors examine five cross-lingual evaluation benchmarks, encompassing diverse linguistic tasks. These include XNLI, evaluating cross-lingual natural language inference; MLQA, designed for cross-lingual question answering; CoNLL, specializing in cross-lingual named entity recognition; PAWS-X, tailored for cross-lingual paraphrase identification; and Tatoeba, honing in on cross-lingual retrieval scenarios. These benchmarks collectively serve as a comprehensive framework for evaluating the efficacy of models in a range of cross-lingual applications.
+
+In the XNLI task, ERNIE-M showcased excellence in both cross-lingual transfer and translate-train-all settings. Outperforming baseline models like XLM, Unicoder, XLM-R, INFOXLM, and VECO, ERNIE-M achieved an average accuracy of 77.3 in cross-lingual transfer and 80.6 in translate-train-all. The larger variant, ERNIE-MLARGE, set a new state-of-the-art with 82.0 accuracy in cross-lingual transfer and 84.2 in translate-train-all, surpassing XLM-RLARGE. The results are summarized in Table 1.
+
+<p align="center"><img src="./ernie-m-xnli.png"></p>
+
+For NER tasks on CoNLL-2002 and CoNLL-2003, ERNIE-M outshone XLM-R, establishing itself as a state-of-the-art model. Particularly noteworthy was its exceptional performance in low-resource languages, where ERNIE-M surpassed the state-of-the-art in Dutch and German.
+
+<p align="center"><img src="./ernie-conll.png" height="250"></p>
+
+In the MLQA task for Question Answering, ERNIE-M surpassed various baseline models, achieving a state-of-the-art score with significantly higher F1 and extract match (EM) scores compared to INFOXLM.
+
+<p align="center"><img src="./ernie-mlqa.png"></p>
+
+The cross-lingual Paraphrase Identification task, evaluated on the PAWS-X dataset, further demonstrated ERNIE-M's prowess. It outperformed baseline models in both cross-lingual transfer and translate-train-all settings, showcasing its accuracy and versatility across different languages.
+
+<p align="center"><img src="./ernie-paws.png"></p>
+
+
+Lastly, in the retrieval task using the Tatoeba dataset, ERNIE-M exhibited substantial improvement in accuracy across all languages following fine-tuning with the hardest negative binary cross-entropy loss.
+
+<p align="center"><img src="./ernie-tatoeba.png" height = "200"></p>
+
+
+In essence, ERNIE-M emerged as a consistently superior model, surpassing baseline models across a spectrum of cross-lingual tasks. Its effectiveness and robust performance underscore its utility in natural language understanding across diverse linguistic contexts.
+
+
+### Ablation Study
+In the ablation study, a series of experiments (exp0 to exp5) were conducted to understand how aligning semantic representations impacts ERNIE-M's training.
+
+- **exp0:** This served as the baseline, involving direct fine-tuning of the XLM-R model on the XNLI and CoNLL tasks.
+
+- **exp1 (MMLM):** ERNIE-M was trained solely on the Masked Language Model (MMLM) using the monolingual corpus to measure the baseline performance gain.
+
+- **exp2 (MMLM + TLM):** This experiment combined MMLM on the monolingual corpus with the Translation Language Model (TLM) on the bilingual corpus to assess the impact of translation-based objectives.
+
+- **exp3 (MMLM + CAMLM):** Integrating MMLM on the monolingual corpus with the Cross-lingual Alignment Model (CAMLM) on the bilingual corpus aimed to evaluate the influence of cross-lingual alignment.
+
+- **exp4 (MMLM + BTMLM + CAMLM):** This experiment incorporated MMLM and Back Translation MMLM (BTMLM) on the monolingual corpus with CAMLM on the bilingual corpus, aiming to combine various training objectives.
+
+- **exp5 (Full Strategy of ERNIE-M):** This represented the complete ERNIE-M strategy, combining multiple training objectives for comprehensive cross-lingual training.
+
+
+<p align="center"><img src="./ablation.png" height = "200"></p>
+
+
+
+Comparisons between these experiments helped discern the impact of different training objectives on cross-lingual semantic alignment and downstream task performance. Notably, the study revealed that certain combinations, such as BTMLM and CAMLM, proved more effective in capturing cross-lingual semantics, leading to improved performance on tasks like XNLI and CoNLL. The experiments highlighted the importance of selecting appropriate training objectives for achieving superior cross-lingual representation alignment and task-specific outcomes.
+
+### ERNIE-M Re-implmentation
+We re-implemented both ERNIE and ERNIE-LARGE using Hugging Face and obtained the following results. The evaluations were conducted for the XNLI task across 15 languages.
+
+
+| Model                  | ar     | bg      | de     | el    | en      | es      | fr     | hi    | ru      | sw      | th    | tr      | ur    | vi         | zh      | Average |
+|------------------------|--------|---------|--------|-------|---------|---------|--------|-------|---------|---------|------|---------|------|------------|---------|---------|
+| ERNIE-M Base  | 0.7764 | 0.8122  | 0.8038 | 0.7966| 0.8537  | 0.8138  | 0.8028 | 0.7445| 0.7842  | 0.7108  | 0.7651| 0.7756  | 0.7172| 0.7922     | 0.7487  | 0.7798  |
+| ERNIE-M Large | 0.8178 | 0.8533  | 0.8395 | 0.8365| 0.8818  | 0.8547  | 0.8489 | 0.7994| 0.8295  | 0.7517  | 0.8090| 0.8178  | 0.7601| 0.8263     | 0.7986  | 0.8217  |
+
+The obtained results align with the anticipated outcomes as documented in the Hugging Face repository, available [here](https://huggingface.co/MoritzLaurer/ernie-m-large-mnli-xnli).
+
+For the implementation details, you can refer to the corresponding Colab notebook, accessible [here](https://colab.research.google.com/drive/1Mqwyogeq7CupZyILh7a7sFv3Zx2nwngc?usp=sharing).
+
+
 
 ## Conclusion
 
