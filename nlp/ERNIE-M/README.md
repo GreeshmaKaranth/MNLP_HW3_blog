@@ -62,7 +62,12 @@ In TLM, predicting the MASK token is based on the input sentence pair. In CAMLM,
 
 <p align="center"><img src="./CAMLM.png"></p>
 
-Here, a parallel sentence pair is denoted as <source sentence, target sentence>. For example, given a parallel CH-EN sentence pair input as <明天会 [MASK][MASK] 吗，Will it be sunny tomorrow>, the model has to uncover the MASK token <天晴> in the source sentence by solely relying on the meaning of the target sentence, thus learning the semantic representation between the two languages.
+In this figure, the input sentences in sub-figure (a) are monolingual sentences; x and y represent monolingual input sentences in different languages. The input sentences in sub-figures (b) and (c) are parallel sentences; x and y denote the source and target sentences of the parallel sentences, respectively. h indicates the token predicted by the model.
+
+Here, a parallel sentence pair is denoted as <source sentence, target sentence>. For example, given a parallel CH-EN sentence pair input as 
+``` <明天会 [MASK][MASK] 吗，Will it be sunny tomorrow> ``` 
+
+the model has to uncover the MASK token `<天晴>` in the source sentence by solely relying on the meaning of the target sentence, thus learning the semantic representation between the two languages.
 
 
 ### Back-translation Masked Language Modeling (BTMLM)
@@ -71,9 +76,9 @@ The second stage proposed by the authors is Back-translation Masked Language Mod
 
 The learning process for the BTMLM is divided into two stages. 
 
-1. Stage 1 focuses on generating pseudo-parallel tokens from monolingual corpora. Specifically, the authors insert placeholder MASK tokens at the end of monolingual sentences to indicate the location and language for generation. The model then generates corresponding parallel language tokens based on the original monolingual sentence and the position of the pseudo-token. This process allows the generation of tokens from another language in the monolingual sentence, contributing to the learning of cross-lingual semantic alignment. During the pseudo-token generation, the model can only attend to the source sentence and the placeholder MASK tokens, indicating the language and position to predict, using language embeddings and position embeddings.
+1. ####Stage 1#### focuses on generating pseudo-parallel tokens from monolingual corpora. Specifically, the authors insert placeholder MASK tokens at the end of monolingual sentences to indicate the location and language for generation. The model then generates corresponding parallel language tokens based on the original monolingual sentence and the position of the pseudo-token. This process allows the generation of tokens from another language in the monolingual sentence, contributing to the learning of cross-lingual semantic alignment. During the pseudo-token generation, the model can only attend to the source sentence and the placeholder MASK tokens, indicating the language and position to predict, using language embeddings and position embeddings.
 
-2. Stage 2 utilizes the pseudo-tokens generated in Stage 1 to learn cross-lingual semantics alignment. In the training process of Stage 2, the model's input is the concatenation of monolingual sentences and generated pseudo-parallel tokens. The learning objective is to restore the MASK tokens based on the original sentences and generated pseudo-parallel tokens. This unique approach allows the model to explicitly learn the alignment of cross-lingual semantic representation from monolingual sentences.  
+2. ####Stage 2#### utilizes the pseudo-tokens generated in Stage 1 to learn cross-lingual semantics alignment. In the training process of Stage 2, the model's input is the concatenation of monolingual sentences and generated pseudo-parallel tokens. The learning objective is to restore the MASK tokens based on the original sentences and generated pseudo-parallel tokens. This unique approach allows the model to explicitly learn the alignment of cross-lingual semantic representation from monolingual sentences.  
 
 In summary, BTMLM involves predicting part of the tokens in input monolingual sentences into tokens of another language. The predicted tokens and the input sentence are then concatenated as pseudo-parallel sentences to train the model. This two-stage process is illustrated in the figure below, with the left figure representing the first stage of BTMLM, predicting pseudo-tokens, and the right figure representing the second stage, making predictions based on the predicted pseudo-tokens and original sentences.
 
@@ -81,6 +86,8 @@ In summary, BTMLM involves predicting part of the tokens in input monolingual se
 
 In ERNIE-M, the authors use MMLM and TLM by default because of the strong performance shown in previous work [2][3]. The authors combine MMLM, TLM with CAMLM, BTMLM to train ERNIE-M. The generated pairs from this comprehensive approach serve as input for the model, further aligning cross-lingual semantics and  enhancing the multilingual representation. This way, the model can learn sentence alignment with only monolingual corpora and overcome the constraint of the parallel corpus size while improving the model performance.
 
+
+## Experiments and Results
 
 ## Conclusion
 
