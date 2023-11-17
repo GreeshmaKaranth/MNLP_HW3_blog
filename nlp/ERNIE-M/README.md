@@ -53,7 +53,7 @@ Based on this idea, the authors propose two pre-training objectives, cross-atten
 
 ### Cross-attention Masked Language Modeling (CAMLM)
 
-In the first stage of this training process, Cross-attention Masked Language Modeling (CAMLM), the aim is to align cross-lingual semantic representation using a small parallel corpus. Unlike other pre-training methods such as Multilingual Masked Language Modeling (MMLM)[2] and Translation Language Modeling (TLM)[3], which focus on learning a shared language-invariant feature space among multiple languages, CAMLM takes a distinct approach. MMLM implicitly models each language's semantic representation in a unified feature space, while TLM, an extension of MMLM, captures semantic alignment by learning parallel sentence pairs simultaneously. However, these methods face constraints due to the limited size of available parallel corpora, especially in low-resource languages.
+In the first stage of this training process, Cross-attention Masked Language Modeling (CAMLM), the aim is to align cross-lingual semantic representation using a small parallel corpus. Unlike other pre-training methods such as Multilingual Masked Language Modeling (MMLM) [2] and Translation Language Modeling (TLM) [3], which focus on learning a shared language-invariant feature space among multiple languages, CAMLM takes a distinct approach. MMLM implicitly models each language's semantic representation in a unified feature space, while TLM, an extension of MMLM, captures semantic alignment by learning parallel sentence pairs simultaneously. However, these methods face constraints due to the limited size of available parallel corpora, especially in low-resource languages.
 
 In contrast, in CAMLM, the multilingual semantic representation is learned by restoring the MASK token in input sentences. When the model restores the MASK token in the source sentence, it can only rely on the semantics of the target sentence. This requires the model to learn how to represent the source language with the semantics of the target sentence, effectively aligning the semantics of multiple languages.
 
@@ -86,7 +86,14 @@ In ERNIE-M, the authors use MMLM and TLM by default because of the strong perfor
 
 
 ## Experiments and Results
-The authors examine five cross-lingual evaluation benchmarks, encompassing diverse linguistic tasks. These include XNLI, evaluating cross-lingual natural language inference; MLQA, designed for cross-lingual question answering; CoNLL, specializing in cross-lingual named entity recognition; PAWS-X, tailored for cross-lingual paraphrase identification; and Tatoeba, honing in on cross-lingual retrieval scenarios. These benchmarks collectively serve as a comprehensive framework for evaluating the efficacy of models in a range of cross-lingual applications.
+The authors examine five cross-lingual evaluation benchmarks, encompassing diverse linguistic tasks. These include 
+- XNLI, evaluating cross-lingual natural language inference; 
+- MLQA, designed for cross-lingual question answering; 
+- CoNLL, specializing in cross-lingual named entity recognition; 
+- PAWS-X, tailored for cross-lingual paraphrase identification;  
+- Tatoeba, honing in on cross-lingual retrieval scenarios. 
+
+These benchmarks collectively serve as a comprehensive framework for evaluating the efficacy of models in a range of cross-lingual applications.
 
 In the XNLI task, ERNIE-M showcased excellence in both cross-lingual transfer and translate-train-all settings. Outperforming baseline models like XLM, Unicoder, XLM-R, INFOXLM, and VECO, ERNIE-M achieved an average accuracy of 77.3 in cross-lingual transfer and 80.6 in translate-train-all. The larger variant, ERNIE-MLARGE, set a new state-of-the-art with 82.0 accuracy in cross-lingual transfer and 84.2 in translate-train-all, surpassing XLM-RLARGE. The results are summarized in Table 1.
 
