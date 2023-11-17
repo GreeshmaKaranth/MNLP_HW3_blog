@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
           # if your docs needs submodules, uncomment the following line
-          # submodules: true
+          submodules: true
 
 
 
