@@ -10,7 +10,7 @@ category:
   - MNLP
 ---
 
-How to develop a model to verify a natural language statement while explaining its rationale?
+Ernie-M: An improved multilingual language model that uses knowledge learned from monolingual corpora to perform cross-lingual tasks better.
 
 Reading Time: About 10 minutes.
 
@@ -24,127 +24,72 @@ Demo: <https://huggingface.co/docs/transformers/v4.35.1/en/model_doc/ernie_m#ove
 
 ## Introduction
 
-![ernie](./ernie.jpg)
+<p align="center"><img src="./ernie.png"/></p>
 
-Recent studies have demonstrated that pre-trained cross-lingual models achieve impressive performance in downstream cross-lingual tasks. This improvement benefits from learning a large amount of monolingual and parallel corpora. Although it is generally acknowledged that parallel corpora are critical
-for improving the model performance, existing methods are often constrained by the size of parallel corpora, especially for low resource languages. [1] 
-Ernie-M is a new training method  that encourages the model to align the representation of multiple languages with monolingual corpora, to overcome the constraint that the parallel corpus size places on the model performance.
+In the realm of natural language processing, a field reliant on copious data, groundbreaking advancements primarily emerge in high-resource languages like English and Chinese, sidelining thousands of low-resource languages. While the conventional approach involves training individual models for each language, recent years have witnessed substantial progress in multilingual model research. This avenue presents a vision of a future where a single model comprehends all languages, fostering seamless communication and information exchange across diverse linguistic backgrounds.
+
+Recent research highlights the impressive performance of pre-trained cross-lingual models in downstream tasks, leveraging extensive monolingual and parallel corpora. However, the efficacy of these methods is often hampered by the limited size of parallel corpora, particularly for low-resource languages [1].
+
+This paper introduces ERNIE-M, a novel multilingual model proficient in understanding 96 languages, coupled with an innovative training method enhancing cross-lingual transferability, even in data-sparse languages. ERNIE-M refers to an enhanced version of the ERNIE (Enhanced Representation through kNowledge Integration) model. This approach encourages the model to align representations across multiple languages with monolingual corpora, mitigating the performance constraints posed by the size of parallel corpora. Experimental results demonstrate ERNIE-M's superiority over existing cross-lingual models, establishing new benchmarks across various cross-lingual downstream tasks.
+
+## Background
+
+Contemporary smart systems like search engines, chatbots, and smart speakers rely heavily on extensive labeled data in a single language. Unfortunately, the vast majority of the 6,500 spoken languages globally lack sufficient data, posing a significant challenge for machines to comprehend them, which in turn limits the accessibility of AI.
+
+Multilingual language models, proficient in understanding and generating text across multiple languages, can be categorized into two main types: discriminative (e.g., mBERT, XLM) and generative (e.g., MASS, mT5). While these models exhibit promise, they encounter limitations in effectively capturing the subtleties of diverse languages. Recent research emphasizes unified multilingual models, showcasing that pretraining cross-lingual language models markedly enhances their performance in cross-lingual natural language processing tasks. These models acquire a language-agnostic representation shared across multiple languages, facilitating transfer learning from well-resourced languages to those with limited resources.
+
+The conventional effective method involves training a model on various monolingual datasets to grasp semantic representation and align languages on parallel corpora. However, limited sizes of parallel corpora hinder the model's performance, especially for low-resource languages where parallel data is scarce, making the task more difficult.
+
+To address these challenges, ERNIE-M introduces innovative approaches inspired by back translation and non-autoregressive neural machine translation. Back translation, known for improving translation performance using parallel data, serves as inspiration for ERNIE-M to enhance its comprehension of different languages. The goal is to overcome previous model limitations and enhance performance in handling diverse languages.
+
+## ERNIE-M Methodology
+
+Recent research findings highlight the remarkable success of pre-trained cross-lingual models in excelling at downstream cross-lingual tasks. This achievement stems from the extensive learning acquired from both monolingual and parallel corpora.
+
+ERNIE-M introduces a key concept: leveraging the transferability gained from parallel corpora to enrich the model's understanding of large-scale monolingual corpora. This strategy aims to enhance the multilingual semantic representation by fostering the learning of semantic alignments between different languages. The authors implement this by generating pseudo-parallel sentence pairs on a monolingual corpus.
+
+Based on this idea, the authors propose two pre-training objectives, cross-attention masked language modeling (CAMLM) and back-translation masked language modeling (BTMLM). CAMLM focuses on aligning the cross-lingual semantic representation on parallel corpora. Subsequently, the transferability acquired from parallel corpora is harnessed to elevate the multilingual representation. Specifically, ERNIE-M is trained by using BTMLM, enabling the model to align the semantics of multiple languages from monolingual corpora and enhance its overall multilingual representation.
 
 
-## LOREN'S architecture
+### Cross-attention Masked Language Modeling (CAMLM)
 
-Overall, LOREN's claim verification process is composed of these steps:
+In the first stage of this training process, Cross-attention Masked Language Modeling (CAMLM), the aim is to align cross-lingual semantic representation using a small parallel corpus. Unlike other pre-training methods such as Multilingual Masked Language Modeling (MMLM)[2] and Translation Language Modeling (TLM)[3], which focus on learning a shared language-invariant feature space among multiple languages, CAMLM takes a distinct approach. MMLM implicitly models each language's semantic representation in a unified feature space, while TLM, an extension of MMLM, captures semantic alignment by learning parallel sentence pairs simultaneously. However, these methods face constraints due to the limited size of available parallel corpora, especially in low-resource languages.
 
-1. It decomposes a natural language statement into different phrase units.
+In contrast, in CAMLM, the multilingual semantic representation is learned by restoring the MASK token in input sentences. When the model restores the MASK token in the source sentence, it can only rely on the semantics of the target sentence. This requires the model to learn how to represent the source language with the semantics of the target sentence, effectively aligning the semantics of multiple languages.
 
-2. For each phrase, LOREN generates a probing question and use it to retrieve relevant evidences, and then it establishes a local premise for that phrase. 
+Unlike TLM, where semantic alignment relies on both source and target sentences, CAMLM only relies on one side of the sentence to restore the MASK token. 
+In TLM, predicting the MASK token is based on the input sentence pair. In CAMLM, the model predicts the MASK token solely based on the sentence of its corresponding parallel sentence and the MASK symbol of this sentence, providing essential position and language information. This unique aspect of CAMLM is advantageous because it avoids information leakage, preventing the model from attending to a pair of input sentences simultaneously. This feature enables the subsequent learning of Back-translation Masked Language Modeling (BTMLM), as illustrated in the figure below.
 
-3. Given the probing questions, evidences, and local premises, LOREN uses a latent model to aggregate the veracity of each phrase using three-valued soft logic, and it finally calculates the probability of the claim being supportive (SUP), refuted (REF), or not enough information (NEI).
+<p align="center"><img src="./CAMLM.png"></p>
 
-The purpose of the first two steps is to look for the evidence that supports the phrase-level veracity, and by the means of soft logic,
-which I will introduce later in the article, we can verify the claim and provide reasoning behind it. Here is an example from the original paper that better illustrated the overall idea:
+Here, a parallel sentence pair is denoted as <source sentence, target sentence>. For example, given a parallel CH-EN sentence pair input as <明天会 [MASK][MASK] 吗，Will it be sunny tomorrow>, the model has to uncover the MASK token <天晴> in the source sentence by solely relying on the meaning of the target sentence, thus learning the semantic representation between the two languages.
 
-<p align="center"><img src="./image2.png" alt="image2"/></p>
-Note that $c_1'$ in the above figure is supposed to be "Joe Biden won the 2020 election". This is the problem in evidence retrival part of LOREN, which I will address it later in the third session.
 
-### Decomposition of the claim
+### Back-translation Masked Language Modeling (BTMLM)
 
-<p align="center"><img src="./result5.png" alt="result5"/></p>
+The second stage proposed by the authors is Back-translation Masked Language Modeling (BTMLM), to further train the model, building upon the transferability gained through CAMLM. BTMLM involves generating pseudo-parallel sentences from monolingual sentences, and these generated sentences are then utilized as input for the model to align cross-lingual semantics.
 
-The above figure shows an example how LOREN decomposes the claim into phrases. The idea behind the claim decomposition is straightforward: We extract verbs, adjective phrases, noun phrases, and name entities from the claim. To ensure the accuracy of the decomposition, LOREN leverage a part-of-speech (POS) tagger for identifying verbs and a constituency parser to identify noun phrases [2] as presented by step 1 in the above example. To decompose these noun phrases into fine-grained phrases, it further uses POS tagger and name entity recognizer to extract adjective phrases, name entities, and fine-grained noun phrases from the original noun phrases (Step 2).
+The learning process for the BTMLM is divided into two stages. 
 
-### Probing questions generation, evidences retrieval, and local premises construction
+1. Stage 1 focuses on generating pseudo-parallel tokens from monolingual corpora. Specifically, the authors insert placeholder MASK tokens at the end of monolingual sentences to indicate the location and language for generation. The model then generates corresponding parallel language tokens based on the original monolingual sentence and the position of the pseudo-token. This process allows the generation of tokens from another language in the monolingual sentence, contributing to the learning of cross-lingual semantic alignment. During the pseudo-token generation, the model can only attend to the source sentence and the placeholder MASK tokens, indicating the language and position to predict, using language embeddings and position embeddings.
 
-Local premises are the collection of information to verify the veracity of each claim. [2] To construct local premises, we need probing questions and evidence as input. Regarding the probing questions, they consist of two sub-questions: one is the cloze question and another is the interrogative question. The cloze question is generated by masking out the phrase in the original claim and the interrogative question is generated by the off-the-shelf question generating model based on the T5 base. To better illustrate how LOREN generates probing questions, here is an example: For the phrase "Smriti Mandhana" in the claim "Smriti Mandhana is an Indian woman", the cloze question is "[MASK] is an Indian woman" and the iterrogative question is "Who is an Indian woman".
+2. Stage 2 utilizes the pseudo-tokens generated in Stage 1 to learn cross-lingual semantics alignment. In the training process of Stage 2, the model's input is the concatenation of monolingual sentences and generated pseudo-parallel tokens. The learning objective is to restore the MASK tokens based on the original sentences and generated pseudo-parallel tokens. This unique approach allows the model to explicitly learn the alignment of cross-lingual semantic representation from monolingual sentences.  
 
-For the evidence retrieval part, we will assume it's done by an off-the-shelf technique, whose evidence source is Wikipedia, because the primary focus of LOREN is the fact verification (This results in a drawback of LOREN's lack of common sense knowledge, which I will address it later in the article). With probing questions and evidence, LOREN adopted the generative machine reading comprehension(MRC) model as a sequence-to-sequence model [3]. MRC model is self-supervised and based on evidence given for each phrase, it will generate answers for that phrase by answering its corresponding probing questions. Then it will replace the original phrase in the claim with answers to generate our local premises.
+In summary, BTMLM involves predicting part of the tokens in input monolingual sentences into tokens of another language. The predicted tokens and the input sentence are then concatenated as pseudo-parallel sentences to train the model. This two-stage process is illustrated in the figure below, with the left figure representing the first stage of BTMLM, predicting pseudo-tokens, and the right figure representing the second stage, making predictions based on the predicted pseudo-tokens and original sentences.
 
-### Latent model construction
+<p align="center"><img src="./BMTLM.png"></p>
 
-Before we dive into the detail of latent model, let me introduce the logic constraints that LOREN developed for predicting claim veracity based on the veracity of each phrase.
+In ERNIE-M, the authors use MMLM and TLM by default because of the strong performance shown in previous work [2][3]. The authors combine MMLM, TLM with CAMLM, BTMLM to train ERNIE-M. The generated pairs from this comprehensive approach serve as input for the model, further aligning cross-lingual semantics and  enhancing the multilingual representation. This way, the model can learn sentence alignment with only monolingual corpora and overcome the constraint of the parallel corpus size while improving the model performance.
 
-1. A claim is supportive(SUP) iff all phrases are supportive(SUP)
-2. A claim is refuted(REF) iff there's at least one phrase that is refuted(REF)
-3. A claim is non-enough-information(NEI) iff neither above.
-
-Following the above logic rules, loren further soften these rules into a probability distribution.
-
-1. $q^{T}_{\phi}(y_z = SUP) = \sum_{i=1}^{|z|}q_{\phi}(z = SUP)$
-2. $q^{T}_{\phi}(y_z = REF) = 1- \sum_{i=1}^{|z|}(1-q_{\phi}(z = SUP))$
-3. $q^{T}_{\phi}(y_z = NEI) = 1-q^{T}_{\phi}(y_z = SUP)-q^{T}_{\phi}(y_z = REF)$
-
-where
-
-1. $y\in{SUP,REF,NEI}$, which is the veracity of a claim.
-2. $z_i\in{SUP,REF,NEI}$, which is the latent variable represents the veracity of a phrase.
-3. $y_z$, which is the logic aggregation of the latent variable $z$, meaning that $y_z$ is a categorical distribution over three labels ${SUP,REF,NEI}$.
-
-The above aggregation of the soft logic serves to distill the knowldge to $p_{\theta}(y|z,x)$ (Probability of the claim label given the phrase-level label and input x),
-which is the probability we eventually want to optimize.
-
-## Experiment
-
-The model is trained on BERT and RoBERTa, and eventually it is evaluated on the dataset FEVER 1.0 shared task that is split into training, development and blind test set.
-Before we analyze the experiment result, I will summarize the experiment metrics they used to evaluate the performance[2]:
-
-### Experiment metrics for the performance of the model:
-
-1. Label Accuracy (LA): The accuracy of predicted label for claim regardless of retrieved evidence.
-2. FEVER score (FEV): The accuracy of both predicted label and retrieved evidence.
-
-<p align="center"><img src="./result1.png" alt="result1"/></p>
-
-Let's look at the above overall performance of LOREN. We can see from the result that LOREN is either outperforming or comparable with other
-baseline method except for LisT5. This is mainly because the PLM for LisT5, which is T5, is larger than BERT and RoBERTa. However, LOREN still outperforms LisT5 on the FEVER score of the development set (dev). To summarize, the performance of LOREN is decent and it has the potential to achieve a better result.
-
-Here is a bar chart that can visualize LOREN's comparable test FEV score with other models:
-
-<p align="center"><img src="./bar_plot.png" alt="bar_plot"/></p>
-
-<p align="center"><img src="./result2.png" alt="result2"/></p>
-
-In addition, we will dive into the most important part of the experiment: a case study of the LOREN's interpretability.
-For claim one in the above figure, LOREN can detect which phrase is the culprit in the claim, and it's also providing the reasoning that why that phrase is causing the mistake, i.e., replacing the false phrase "the number three" with "the number one". In the third claim, LOREN shows its ability to detect multiple culprit phrases in the claim. However, for the second claim, the predicted result should be NEI. LOREN made this mistake mainly because of the evidence retrieval module and MRC module. First, the evidence retrieval module did not draw the correct evidence, and then the MRC module still replaced the original phrase even though there's no direct evidence given. Here's some examples that indicates a drawback of LOREN:
-
-<p align="center"><img src="./result3.png" alt="result3"/></p>
-
-For the phrase "a tree" in the claim, even though LOREN generates the correct local premise based on the evidence, it still considers the label of this phrase as supported. It is because LOREN does not possess commonsense knowledge, and we can see the probability of SUP and REF are very close, indicating that LOREN fails to distinguish "tree" and "edible fruit produced" as two completely different objects.
-
-<p align="center"><img src="./claim2.png" alt="claim2"/></p>
-<p align="center"><img src="./outcome2.png" alt="outcome2"/></p>
-
-Here's another interesting example of LOREN's output. For the claim "Alaska was Russian territory long ago", though LOREN found the correct evidence, but it predicted the claim as REFUTES. It is confusing because the United States purchased Alaska on 1867, and before that time, Alaska is Russian territory. How did LOREN make this mistake? LOREN even has the evidence:"The Russian Empire was the first actively colonize the area beginning in the 18th century". In here I guess the reason's that LOREN does not consider Russian Empire is the same as Russian in the context of the claim, so I make another experiment by replacing "Russian" to "Russian Empire's":
-
-<p align="center"><img src="./claim1.png" alt="claim1"/></p>
-<p align="center"><img src="./outcome1.png" alt="outcome1"/></p>
-
-The result illustrated that LOREN knows Alaska was the territory of the Russian Empire since 1867. The former claim verification failed because LOREN can only predict based on the current evidence retrieved. In the last claim, LOREN does not have the evidence showing Russia is Russian Empire, so it eventually believes the claim is false. However, as humans, we always consider the Russian empire as Russia because it's the history of that country. But for LOREN in this case, it does not know about how a country is related to its history without enough evidence. The main cause of this result is also the immaturity of evidence retrieval. In the next step, I will show the potential problems within LOREN's MRC mode.
-
-<p align="center"><img src="./claim4.png" alt="claim4"/></p>
-<p align="center"><img src="./outcome3.png" alt="outcome3"/></p>
-
-Here I provide a successful prediction outcome, and as we can see, LOREN's evidence retrival and MRC model work well in this prediction except that it fails to predict the first local premises to be refuted. However, when I change "is" to "is not", a more weird thing happens: LOREN's MRC model does not change the origin local premises in the last example:
-
-<p align="center"><img src="./claim5.png" alt="claim5"/></p>
-<p align="center"><img src="./outcome4.png" alt="outcome4"/></p>
-
-As we can see for the second phrase "Mexico", LOREN still replaces the phrase with "the United States" and even calculates a higher probability of refutes than supports. For now I'm not certain why LOREN behaves like this, but I have an assumption: LOREN's MRC model does not successfully interpret the claim. To be more specific, the prediction of the first phrase in these two examples are contradicting with each other, indicating that LOREN fails to interpret the difference between "is" and "is not", although its probability of supported and refuted are close to each other in the second example. Back to the local premises construction (MRC) for the second phrase, LOREN again fails to differentiate the meaning of "is" and "is not", so it has the same prediction for the veracity of second phrase as REF.
-
-<p align="center"><img src="./claim6.png" alt="claim6"/></p>
-<p align="center"><img src="./outcome5.png" alt="outcome5"/></p>
-
-Despite some issues in evidence retrieval and MRC, LOREN can verify most claims given Wikipedia as the knowledge source. The above claim "Eminem is a rapper, but he also starred in a film" is a typical example where LOREN grabs the correct evidence and successfully verifies the claim as SUP. We know that Eminem is an influential rapper in the US, but lots of people do not know he is also an actor. In this case, for the phrase "a film" and "starred", LOREN retrieve the correct evidence, which is the first and third one. Then, LOREN's local premises construction for these two phrases also performs well: "Eminem is a rapper, but he also starred in Funny People" and "Eminem is a rapper, but he also appeared in a film", which results in the high probability of support. Eventually, LOREN considers this claim is SUP.
-
-## Future improvements
-
-Since LOREN primarily focused on fact verification, so the evidence retrieval module in the model is immature. For the evidence retrieval part, LOREN directly adopts the retrieved results of KGAT which relies on the entity linking: sentence ranking pipeline. In other words, LOREN searches the name entity on Wikipedia and selects related sentences (evidence) based on a neural sentence ranking. Since evidence retrieved from Wikipedia is rich in encyclopedic knowledge but poor in commonsense knowledge, LOREN is biased toward this knowledge. Thus, how to train LOREN to understand common sense knowledge is worth exploring in the future. On the other hand, LOREN does not possess the power to verify the first-order logic claims, such as "All spiders are poisonous" or "There exists an apple that is not edible". Since in this case, if the evidence does not directly imply the correctness of the claim, LOREN may not be able (and it's also computationally inefficient) to search for all spiders to check if there exist some spiders that are not poisonous.
 
 ## Conclusion
 
-To verify the veracity of a claim, LOREN first computes the probability of the veracity of each phrase in the claim, and with the soft logics, it further aggregates the corresponding probabilities to predict the correctness of the claim. This method does well in verifying correctness of a claim and providing the related rationales.
+To address the limitation imposed by the size of parallel corpora on the performance of cross-lingual models, this paper introduces a novel cross-lingual model, ERNIE-M, trained on both monolingual and parallel corpora. ERNIE-M makes a significant contribution by introducing two key training objectives. The first objective aims to enhance the multilingual representation on parallel corpora through the application of Cross-attention Masked Language Modeling (CAMLM). The second objective focuses on facilitating the alignment of cross-lingual semantic representations from a monolingual corpus using Back-translation Masked Language Modeling (BTMLM). Experimental results demonstrate that ERNIE-M achieves state-of-the-art (SoTA) results across various downstream tasks on datasets such as XNLI, MLQA, CoNLL, PAWS-X, and Tatoeba.
 
 ## References
 
 [1] Xuan Ouyang, Shuohuan Wang, Chao Pang, Yu Sun, Hao Tian, Hua Wu, and Haifeng Wang. 2021. ERNIE-M: Enhanced Multilingual Representation by Aligning Cross-lingual Semantics with Monolingual Corpora. In Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing, pages 27–38, Online and Punta Cana, Dominican Republic. Association for Computational Linguistics.
 
-[2] TODO
+[2] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2018. Bert: Pre-training of deep bidirectional transformers for language understanding. arXiv preprint arXiv:1810.04805.
+
+[3] Alexis Conneau, Guillaume Lample, Ruty Rinott, Adina Williams, Samuel R Bowman, Holger Schwenk, and Veselin Stoyanov. 2018. Xnli: Evaluating cross-lingual sentence representations. arXiv preprint arXiv:1809.05053.
